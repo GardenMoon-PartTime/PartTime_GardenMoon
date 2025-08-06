@@ -12,7 +12,7 @@
             disableSelect: true,      // Vô hiệu hóa select text
             disableCopy: true,        // Vô hiệu hóa copy
             disableCut: true,         // Vô hiệu hóa cut
-            disablePaste: true,       // Vô hiệu hóa paste
+            disablePaste: false,       // Vô hiệu hóa paste
             clearLog: true,           // Xóa console log
             interval: 1000,           // Kiểm tra mỗi 1 giây
             detectors: [0,1,2,3,4,5,6,7], // Tất cả các detector
@@ -71,6 +71,9 @@ function showProjectsView() {
 }
 
 function showTasksView(projectId) {
+    console.log('showTasksView called with projectId:', projectId)
+    console.log('Current projectId:', currentProjectId)
+    
     document.getElementById('projectsView').style.display = 'none'
     document.getElementById('tasksView').style.display = ''
     
@@ -79,6 +82,7 @@ function showTasksView(projectId) {
     
     // Update project name in header
     const project = projects.find(p => p.id === projectId)
+    console.log('Project found for header:', project)
     if (project) {
         document.getElementById('currentProjectName').textContent = project.name
     }
@@ -192,6 +196,7 @@ async function loadDataFromSupabase() {
 
 async function loadProjects() {
     try {
+        console.log('Loading projects...')
         let query = supabase.from('projects')
             .select(`
                 *,
@@ -203,9 +208,17 @@ async function loadProjects() {
         
         const { data, error } = await query
         
-        if (error) throw error
+        if (error) {
+            console.error('Supabase error loading projects:', error)
+            throw error
+        }
+        
+        console.log('Projects loaded:', data)
         projects = data || []
         filteredProjects = [...projects]
+        
+        console.log('Projects array:', projects)
+        console.log('Filtered projects:', filteredProjects)
         
         renderProjectsTable()
         
@@ -217,6 +230,7 @@ async function loadProjects() {
 
 async function loadTasks(projectId = null) {
     try {
+        console.log('Loading tasks...', projectId ? `for project ${projectId}` : 'all tasks')
         let query = supabase.from('tasks').select('*')
         
         if (projectId) {
@@ -228,7 +242,12 @@ async function loadTasks(projectId = null) {
         
         const { data, error } = await query
         
-        if (error) throw error
+        if (error) {
+            console.error('Supabase error loading tasks:', error)
+            throw error
+        }
+        
+        console.log('Tasks loaded:', data)
         tasks = data || []
         
         console.log(`Loaded ${tasks.length} tasks total`)
@@ -1747,6 +1766,10 @@ function renderTasksTable() {
 }
 
 function selectProject(projectId) {
+    console.log('selectProject called with projectId:', projectId)
+    console.log('Current projects:', projects)
+    console.log('Project found:', projects.find(p => p.id === projectId))
+    
     // Switch to tasks view
     showTasksView(projectId)
 }
